@@ -1,0 +1,48 @@
+  #SportsAnalytics library - Getting player stats
+  
+  library(SportsAnalytics)
+  NBA<-fetch_NBAPlayerStatistics("18-19")
+  
+  #Creating Offensive Efficiency Statistic
+    
+  NBA$OE<-rep((NBA$FieldGoalsMade+NBA$Assists)/(NBA$FieldGoalsAttempted+NBA$Assists-NBA$OffensiveRebounds+NBA$Turnovers))
+  
+  #Creating Averages of Assists and Points scored
+    
+  
+  NBA$Average_PPG <- rep(NBA$TotalPoints/NBA$GamesPlayed)
+  
+  NBA$TotalPoints <- rep(NBA$Average_PPG*82)
+  
+  NBA$Average_APG <- rep(NBA$Assists/NBA$GamesPlayed)
+  
+  NBA$TotalAssists <- rep(NBA$Average_APG*82)
+  
+  #Creating Efficient Offensive Production statistic 
+  
+  NBA$Raw_EOP<-rep((.76*NBA$TotalAssists+NBA$TotalPoints)*NBA$OE)  
+  
+  NBA$LeaguePoints <- sum(NBA$TotalPoints)
+  NBA$Raw_EOP <- ifelse(NBA$Raw_EOP=="NaN",0,NBA$Raw_EOP)
+  NBA$GDENOM <- sum(NBA$Raw_EOP)
+  
+  NBA$G <-rep(NBA$LeaguePoints/NBA$GDENOM)
+              
+  NBA$EOP <- rep(NBA$G*NBA$Raw_EOP)
+  
+  #Top 20 EOP
+  NBA20EOPSort <- NBA[order(NBA$EOP, decreasing = TRUE),]
+  
+  NBATop20EOP <- NBA20EOPSort[1:20,]
+  
+  #Graphing 
+  library(ggplot2)
+  library(ggthemes)
+  library(extrafont)
+  library(grid)
+  library(gridBase)
+  
+ 
+  #Bar Plot of top 20
+  Top20Players <- barplot(NBATop20EOP$EOP, las =2, cex.names = .5, col = rainbow(20), main = "Top 20 NBA Efficient Offensive Players", horiz = TRUE, names.arg = c(NBATop20EOP$Name))
+  
